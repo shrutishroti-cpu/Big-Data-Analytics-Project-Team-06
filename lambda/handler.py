@@ -13,8 +13,6 @@ STREAM_NAME = 'data-clicks-06'
 
 # Sample values for random generation
 pages = ['home', 'product', 'cart', 'checkout', 'search']
-devices = ['mobile', 'desktop', 'tablet']
-locations = ['US', 'IN', 'UK', 'CA', 'AU']
 
 def generate_click_event():
     """Generate a random click event."""
@@ -23,10 +21,7 @@ def generate_click_event():
         'timestamp': datetime.utcnow().isoformat(),
         'user_id': random.randint(1000, 9999),
         'page': random.choice(pages),
-        'device': random.choice(devices),
-        'location': random.choice(locations),
-        'action': random.choice(['click', 'view', 'add_to_cart', 'purchase']),
-        'session_id': str(uuid.uuid4())
+        'action': random.choice(['click', 'view', 'add_to_cart', 'purchase'])
     }
 
 def lambda_handler(event, context):
