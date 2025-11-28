@@ -5,9 +5,9 @@ from pyspark.sql.types import StructType, StructField, StringType, IntegerType, 
 from pyspark.sql.functions import lit
 from datetime import datetime
 # ---------------------------
-# HARD-CODED CONFIGURATION
+# CONFIGURATION
 # ---------------------------
-# :white_check_mark: CHANGE THESE VALUES AS PER YOUR PROJECT
+
 JOB_NAME = "unified-etl-job"  # Glue Job Name
 RAW_BUCKET = "project-raw-06"  # S3 bucket for raw data
 PROCESSED_BUCKET = "project-processed-06"  # S3 bucket for processed data
@@ -20,13 +20,13 @@ glueContext = GlueContext(sc)
 spark = glueContext.spark_session
 job = Job(glueContext)
 job.init(JOB_NAME, {})
-# Current date for partitioning processed data
+
 now = datetime.utcnow()
 year, month, day = now.year, now.month, now.day
 # ---------------------------
-# DEFINE SCHEMAS FOR INPUT FILES
+# SCHEMAS FOR INPUT FILES
 # ---------------------------
-# :white_check_mark: CHANGE IF YOUR RAW DATA HAS DIFFERENT COLUMNS OR DATA TYPES
+
 users_schema = StructType([
     StructField("user_id", StringType(), True),
     StructField("signup_date", StringType(), True),
@@ -77,14 +77,14 @@ def write_errors(df, dataset_name):
 # ---------------------------
 # READ RAW DATA FROM S3
 # ---------------------------
-# :white_check_mark: CHANGE PATHS IF YOUR RAW DATA IS IN DIFFERENT FOLDERS
+
 users_df = read_csv(f"s3://{RAW_BUCKET}/usercsv/users_sample.csv", users_schema)
 transactions_df = read_csv(f"s3://{RAW_BUCKET}/transactions-sample/transactions.csv", transactions_schema)
 clickstream_df = read_json(f"s3://{RAW_BUCKET}/2025/11/18/*/", clickstream_schema)
 # ---------------------------
 # DATA QUALITY VALIDATION
 # ---------------------------
-# :white_check_mark: CHANGE FILTER CONDITIONS IF YOUR RULES ARE DIFFERENT
+
 users_valid = users_df.filter("user_id IS NOT NULL AND age > 0 AND length(signup_date)=10")
 users_invalid = users_df.subtract(users_valid)
 transactions_valid = transactions_df.filter("price > 0 AND quantity > 0 AND abs(total - (price * quantity)) <= (0.05 * total)")

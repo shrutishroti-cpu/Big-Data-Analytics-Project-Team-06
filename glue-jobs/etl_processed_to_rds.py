@@ -8,17 +8,17 @@ from pyspark.sql import functions as F
 from datetime import datetime
 import boto3
 import json
-# Set the job name explicitly
+
 job_name = 's3-to-rds'
-# Get job arguments
+
 args = getResolvedOptions(sys.argv, ['JOB_NAME'])
-args['JOB_NAME'] = job_name  # Set the job name explicitly
+args['JOB_NAME'] = job_name  
 sc = SparkContext()
 glueContext = GlueContext(sc)
 spark = glueContext.spark_session
 job = Job(glueContext)
 job.init(args['JOB_NAME'], args)
-# Current timestamp for processed columns
+
 now = datetime.now()
 processed_year = now.year
 processed_month = now.month
@@ -32,7 +32,7 @@ clickstream_path = "s3://project-processed-06/clickstream/processed_time_year=20
 transaction_df = spark.read.parquet(transaction_path)
 user_df = spark.read.parquet(user_path)
 clickstream_df = spark.read.parquet(clickstream_path)
-# Add processed columns
+# Added processed columns
 def add_processed_columns(df):
     return (df.withColumn("processed_year", F.lit(processed_year))
             .withColumn("processed_month", F.lit(processed_month))
@@ -41,13 +41,13 @@ def add_processed_columns(df):
 transaction_df = add_processed_columns(transaction_df)
 user_df = add_processed_columns(user_df)
 clickstream_df = add_processed_columns(clickstream_df)
-# Fetch RDS credentials from Secrets Manager
+# Fetched RDS credentials from Secrets Manager
 def get_rds_credentials(secret_name, region_name="us-east-1"):
     client = boto3.client('secretsmanager', region_name=region_name)
     try:
-        # Fetch the secret value
+        # Fetching the secret value
         secret_value = client.get_secret_value(SecretId=secret_name)
-        # Parse the secret value
+        # Parsed the secret value
         if 'SecretString' in secret_value:
             secret = json.loads(secret_value['SecretString'])
         else:
@@ -56,16 +56,19 @@ def get_rds_credentials(secret_name, region_name="us-east-1"):
     except Exception as e:
         print(f"Error fetching RDS credentials: {e}")
         raise e
-# Secret name from Secrets Manager
-secret_name = "s3-to-rds-job-secret"  # Updated to your secret name
-# Fetch the credentials
+
+
+secret_name = "s3-to-rds-job-secret"  
+
+
 secret = get_rds_credentials(secret_name)
-# RDS connection details from the secret
+
 rds_url = secret["rds_url"]
 rds_user = secret["username"]
 rds_password = secret["password"]
 driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
-# Write to RDS tables
+
+
 transaction_df.write \
     .format("jdbc") \
     .option("url", rds_url) \
